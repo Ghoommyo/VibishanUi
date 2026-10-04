@@ -12,7 +12,7 @@
   - Editable with edit and save: name, contact number, email, bio, and areas of expertise (providers only).
 - `src/app/(app)/(drawer)/settings.tsx`:
   - Appearance: System, Light or Dark (via `PrefsProvider`).
-  - Notification toggles: request updates, chat messages.
+  - Notification toggles: request updates (unread badge for accept/decline updates), message previews in the chatroom list.
   - "Available for new requests" (providers only; hides the account from the dropdown).
   - App version from `expo-constants`.
   - "Reset demo data" (`resetDb()`) and Logout.

@@ -1,5 +1,6 @@
 import { SymbolView } from 'expo-symbols';
 import type { ComponentProps } from 'react';
+import type { ColorValue } from 'react-native';
 
 import { ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -37,7 +38,7 @@ type IconProps = {
   size?: number;
   color?: ThemeColor;
   /** Overrides `color` with a raw colour value. */
-  tintColor?: string;
+  tintColor?: ColorValue;
 };
 
 export function Icon({ name, size = 22, color = 'text', tintColor }: IconProps) {

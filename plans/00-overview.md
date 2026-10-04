@@ -17,7 +17,7 @@ The backend is mocked for now: a typed in-app API layer backed by AsyncStorage a
 - `@react-native-async-storage/async-storage` and `react-native-svg` both support web and Expo Go.
 
 ## New dependencies
-`npx expo install @react-native-async-storage/async-storage react-native-svg`
+`npx expo install @react-native-async-storage/async-storage react-native-svg` (done in phase 1)
 
 ## Route tree (`src/app/`)
 ```
