@@ -38,6 +38,8 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      // Without this, an icon's glyph text would be read out as part of the name.
+      accessibilityLabel={title}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       style={(state) => [

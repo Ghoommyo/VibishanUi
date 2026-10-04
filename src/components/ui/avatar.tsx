@@ -6,10 +6,14 @@ import { ThemedText } from '@/components/themed-text';
 // Fixed hues that read well with white initials in both themes.
 const PALETTE = ['#208AEF', '#7C5CDB', '#1E9E5A', '#D9822B', '#D2457A', '#2A9D9F', '#6B7A8F'];
 
+// FNV-1a: spreads similar ids (u_alice, u_bob, …) across the palette better than a simple polynomial hash.
 function colorFor(id: string) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
-  return PALETTE[Math.abs(hash) % PALETTE.length];
+  let hash = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    hash ^= id.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return PALETTE[(hash >>> 0) % PALETTE.length];
 }
 
 export function initials(user: Pick<PublicUser, 'username' | 'profile'>) {
