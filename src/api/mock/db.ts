@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { createSeed } from './seed';
-import type { DbState } from './types';
+import type { DbState } from '../types';
 
 const KEY = 'vibishan.db.v1';
 

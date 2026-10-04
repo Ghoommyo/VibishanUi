@@ -2,8 +2,7 @@ import { Link, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 
-import { notificationsApi, requestsApi } from '@/api';
-import type { NotificationItem } from '@/api/notifications';
+import { notificationsApi, requestsApi, type NotificationItem } from '@/api';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Avatar } from '@/components/ui/avatar';

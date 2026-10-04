@@ -2,8 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
 
-import { roomsApi } from '@/api';
-import type { RoomListItem } from '@/api/rooms';
+import { roomsApi, type RoomListItem } from '@/api';
 import { ChatRow } from '@/components/chat/chat-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';

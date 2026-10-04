@@ -28,7 +28,7 @@ All demo accounts use the password `password123`. The login screen has buttons t
 | Listener | lisa, leo |
 | Moderator | maya, max |
 
-Data is stored on the device, so to try a flow between two people, log out and log back in as the other account. **Settings → Reset demo data** restores the sample data.
+The app talks to the Vibishan API server ([spec](docs/backend-api-spec.md)), at `http://127.0.0.1:8000` by default. Set `EXPO_PUBLIC_API_URL` to change it (see `.env.example`), or set `EXPO_PUBLIC_USE_MOCK=1` to use the in-app mock backend instead. To try a flow between two people, log out and log back in as the other account. **Settings → Reset demo data** restores the sample data.
 
 ## Checks
 

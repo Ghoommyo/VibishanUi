@@ -1,6 +1,6 @@
 // Helpers shared by the API modules. Not imported by UI code.
 import { ApiError, newId } from './client';
-import type { DbState, NotificationKind, User } from './types';
+import type { DbState, NotificationKind, User } from '../types';
 
 export function findUser(db: DbState, id: string): User {
   const user = db.users.find((u) => u.id === id);

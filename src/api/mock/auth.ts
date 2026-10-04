@@ -1,6 +1,17 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { ApiError, delay, newId, setCurrentUserId, toPublic } from './client';
 import { getDb, transact } from './db';
-import type { PublicUser, Role } from './types';
+import type { PublicUser, Role, SignupInput } from '../types';
+
+// The mock "token" is just the user id, kept across app restarts.
+const SESSION_KEY = 'vibishan.session.userId';
+
+async function startSession(user: PublicUser) {
+  setCurrentUserId(user.id);
+  await AsyncStorage.setItem(SESSION_KEY, user.id);
+  return user;
+}
 
 const ROLE_LABEL: Record<Role, string> = { user: 'User', listener: 'Listener', moderator: 'Moderator' };
 
@@ -14,11 +25,8 @@ export async function login(username: string, password: string, role: Role): Pro
   if (user.role !== role) {
     throw new ApiError('wrong_role', `This account is registered as a ${ROLE_LABEL[user.role]}.`);
   }
-  setCurrentUserId(user.id);
-  return toPublic(user);
+  return startSession(toPublic(user));
 }
-
-export type SignupInput = { username: string; email: string; password: string; role: Role };
 
 export async function signup(input: SignupInput): Promise<PublicUser> {
   await delay();
@@ -44,12 +52,13 @@ export async function signup(input: SignupInput): Promise<PublicUser> {
     db.users.push(created);
     return created;
   });
-  setCurrentUserId(user.id);
-  return toPublic(user);
+  return startSession(toPublic(user));
 }
 
-/** Re-establishes a stored session on app start. Returns null if the account no longer exists. */
-export async function restoreSession(userId: string): Promise<PublicUser | null> {
+/** Re-establishes a stored session on app start. Returns null if there is none or the account no longer exists. */
+export async function restoreSession(): Promise<PublicUser | null> {
+  const userId = await AsyncStorage.getItem(SESSION_KEY);
+  if (!userId) return null;
   const db = await getDb();
   const user = db.users.find((u) => u.id === userId);
   setCurrentUserId(user?.id ?? null);
@@ -58,4 +67,5 @@ export async function restoreSession(userId: string): Promise<PublicUser | null>
 
 export async function logout() {
   setCurrentUserId(null);
+  await AsyncStorage.removeItem(SESSION_KEY);
 }

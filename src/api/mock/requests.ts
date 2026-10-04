@@ -1,9 +1,7 @@
 import { ApiError, delay, newId, requireAuth } from './client';
 import { transact } from './db';
 import { displayName, findUser, listNames, notify } from './internal';
-import type { DbState, ServiceRequest } from './types';
-
-export type SentRequestsResult = { providerNames: string[]; participantNames: string[] };
+import type { DbState, SentRequestsResult, ServiceRequest } from '../types';
 
 function createRoomAndRequest(
   db: DbState,

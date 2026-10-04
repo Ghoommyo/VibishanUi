@@ -14,8 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { roomsApi, type PublicUser } from '@/api';
-import { CLOSURE_LABEL } from '@/api/rooms';
+import { CLOSURE_LABEL, roomsApi, type PublicUser } from '@/api';
 import { MessageBubble } from '@/components/chat/message-bubble';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';

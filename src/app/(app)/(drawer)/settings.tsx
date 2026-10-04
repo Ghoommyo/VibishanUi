@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { useState } from 'react';
 import { StyleSheet, Switch, View } from 'react-native';
 
-import { resetDb, usersApi, type UserSettings } from '@/api';
+import { ApiError, resetDb, USE_MOCK, usersApi, type UserSettings } from '@/api';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
@@ -27,6 +27,7 @@ export default function SettingsScreen() {
   const { themePref, setThemePref } = usePrefs();
   const [confirmReset, setConfirmReset] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
   const isProvider = user.role !== 'user';
 
   const toggle = (key: keyof UserSettings) => async (value: boolean) => {
@@ -94,8 +95,13 @@ export default function SettingsScreen() {
       <Dialog
         visible={confirmReset}
         title="Reset demo data?"
-        message="This deletes every account, request and chat created on this device and restores the sample data. You'll be logged out."
-        onClose={() => setConfirmReset(false)}
+        message={`This deletes every account, request and chat created ${
+          USE_MOCK ? 'on this device' : 'on the server'
+        } and restores the sample data. You'll be logged out.`}
+        onClose={() => {
+          setConfirmReset(false);
+          setResetError(null);
+        }}
         actions={
           <>
             <Button title="Cancel" variant="secondary" size="small" onPress={() => setConfirmReset(false)} />
@@ -106,13 +112,21 @@ export default function SettingsScreen() {
               loading={resetting}
               onPress={async () => {
                 setResetting(true);
-                await resetDb();
+                setResetError(null);
+                try {
+                  await resetDb();
+                } catch (e) {
+                  setResetError(e instanceof ApiError ? e.message : 'Could not reset the data.');
+                  setResetting(false);
+                  return;
+                }
                 await signOut();
               }}
             />
           </>
-        }
-      />
+        }>
+        {resetError && <ThemedText themeColor="danger">{resetError}</ThemedText>}
+      </Dialog>
     </Screen>
   );
 }

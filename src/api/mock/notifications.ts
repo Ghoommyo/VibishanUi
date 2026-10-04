@@ -1,16 +1,7 @@
 import { delay, requireAuth, toPublic } from './client';
 import { getDb, transact } from './db';
 import { findUser } from './internal';
-import type { AppNotification, PublicUser, ServiceRequest } from './types';
-
-export type NotificationItem = AppNotification & {
-  request: ServiceRequest;
-  requester: PublicUser;
-  provider: PublicUser;
-  participants: PublicUser[];
-  /** True when the current user still has to accept or reject. */
-  actionable: boolean;
-};
+import type { NotificationItem } from '../types';
 
 export async function list(): Promise<NotificationItem[]> {
   await delay(150, 300);

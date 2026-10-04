@@ -1,47 +1,7 @@
 import { ApiError, delay, newId, requireAuth, toPublic } from './client';
 import { getDb, transact } from './db';
 import { findUser } from './internal';
-import type { DbState, Message, PublicUser, Room } from './types';
-
-/** How the current user takes part in a room. Decides the closing-note label and permissions. */
-export type RoomRole = 'member' | 'listener' | 'moderator';
-export type ClosureLabel = 'Conclusion' | 'Observation' | 'Verdict';
-
-export const CLOSURE_LABEL: Record<RoomRole, ClosureLabel> = {
-  member: 'Conclusion',
-  listener: 'Observation',
-  moderator: 'Verdict',
-};
-
-export type RoomListItem = {
-  room: Room;
-  provider: PublicUser;
-  others: PublicUser[];
-  lastMessage: Message | null;
-  lastActivity: number;
-};
-
-export type RoomDetail = {
-  room: Room;
-  members: PublicUser[];
-  myRole: RoomRole;
-  canSend: boolean;
-  /** Why the composer is disabled, when it is. */
-  sendBlockedReason: string | null;
-  hasSubmitted: boolean;
-  needsRating: boolean;
-};
-
-export type MessageWithSender = Message & { sender: PublicUser };
-
-export type RoomSummary = {
-  room: Room;
-  provider: PublicUser;
-  starred: MessageWithSender[];
-  comments: { user: PublicUser; text: string; at: number }[];
-  observation: { user: PublicUser; text: string } | null;
-  verdict: { user: PublicUser; text: string } | null;
-};
+import type { DbState, Message, MessageWithSender, Room, RoomDetail, RoomListItem, RoomRole, RoomSummary } from '../types';
 
 function roomRoleOf(room: Room, userId: string): RoomRole {
   if (userId !== room.providerId) return 'member';

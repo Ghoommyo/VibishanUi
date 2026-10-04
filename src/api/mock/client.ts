@@ -1,14 +1,7 @@
-import type { PublicUser, User } from './types';
+import { ApiError } from '../errors';
+import type { PublicUser, User } from '../types';
 
-export class ApiError extends Error {
-  constructor(
-    public code: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
+export { ApiError } from '../errors';
 
 /** Simulates network latency so loading states are exercised. */
 export function delay(min = 300, max = 600) {

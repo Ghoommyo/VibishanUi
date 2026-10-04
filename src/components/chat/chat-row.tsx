@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import type { RoomListItem } from '@/api/rooms';
+import type { RoomListItem } from '@/api';
 import { ThemedText } from '@/components/themed-text';
 import { Avatar } from '@/components/ui/avatar';
 import { Icon } from '@/components/ui/icon';

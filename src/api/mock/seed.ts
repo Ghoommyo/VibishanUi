@@ -1,4 +1,4 @@
-import type { DbState, Message, Role, Room, ServiceRequest, User } from './types';
+import type { DbState, Message, Role, Room, ServiceRequest, User } from '../types';
 
 export const DEMO_PASSWORD = 'password123';
 

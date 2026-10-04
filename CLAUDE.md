@@ -17,7 +17,7 @@ npx tsc --noEmit         # typecheck
 npx expo-doctor          # dependency/config checks
 ```
 
-There is no test runner. To check a change, run the app on web (`npm run web`) and walk the flows with the demo accounts below. Running `npx expo export --platform ios --platform android` is a quick way to confirm that native bundling still works.
+There is no test runner. To check a change, start the API server, run the app on web (`npm run web`) and walk the flows with the demo accounts below. Running `npx expo export --platform ios --platform android` is a quick way to confirm that native bundling still works.
 
 Don't start Metro with `CI=1` while you're editing: in CI mode it doesn't watch files, so the browser keeps serving a stale bundle.
 
@@ -27,11 +27,16 @@ Users request either a 1:1 session with a **Listener** or a group session run by
 
 ## Architecture
 
-### Mock backend: `src/api/`
-All data and business rules live here. UI code never changes data directly; it calls the namespaces exported from `src/api/index.ts` (`authApi`, `usersApi`, `requestsApi`, `roomsApi`, `notificationsApi`, `analyticsApi`). These are written so that real HTTP calls can replace them later.
-- `db.ts` keeps one JSON snapshot in AsyncStorage (`vibishan.db.v1`), seeded from `seed.ts` on first run. Mutations go through `transact()`. Settings → "Reset demo data" calls `resetDb()`.
-- `client.ts` holds the current user id, which stands in for an auth token. Endpoints call `requireAuth()` instead of taking a user id. `delay()` simulates network latency.
-- The rules are enforced in `requests.ts` and `rooms.ts`, not in screens:
+### API layer: `src/api/`
+UI code never changes data directly. It calls the namespaces exported from `src/api/index.ts` (`authApi`, `usersApi`, `requestsApi`, `roomsApi`, `notificationsApi`, `analyticsApi`, `resetDb`) and imports types only from `@/api`. There are two implementations, chosen in `index.ts`. Each namespace is typed as `typeof http<Module>`, so the two have to stay in step.
+- **`http/`** (the default) is a FastAPI + Postgres backend that follows `docs/backend-api-spec.md`, under `${EXPO_PUBLIC_API_URL}/api/v1`. The default URL is `http://127.0.0.1:8000`, or `10.0.2.2` on Android.
+  - `client.ts` `request()` turns `{error:{code,message}}` into `ApiError`. On a 401 `unauthorized` it clears the token and fires `onUnauthorized`, which `SessionProvider` uses to log out.
+  - The JWT lives in `expo-secure-store` on native and `localStorage` on web (`http/token.ts`).
+  - The server's `CORS_ORIGINS` must include `http://localhost:8081`.
+- **`mock/`** is used when `EXPO_PUBLIC_USE_MOCK=1`. It is the original in-app backend. `db.ts` keeps one JSON snapshot in AsyncStorage (`vibishan.db.v1`), seeded from `seed.ts`, and mutations go through `transact()`. `client.ts` holds the current user id in place of a token.
+- `authApi.login`/`signup`/`restoreSession()`/`logout` persist the credential themselves (the token or the mock user id), so `SessionProvider` doesn't touch storage.
+- The integration notes are in `plans/08-api-integration.md`. See `.env.example` for the env vars.
+- On the server, the business rules live in its services layer. In mock mode they're in `mock/requests.ts` and `mock/rooms.ts`:
   - Moderation requests need every participant to accept before the moderator is notified.
   - Rooms move through `pending → active → closed`, or to `rejected`.
   - Muted members, and members who have already submitted a closure, can't send messages.

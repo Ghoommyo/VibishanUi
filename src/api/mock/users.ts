@@ -1,9 +1,14 @@
 import { ApiError, delay, requireAuth, toPublic } from './client';
 import { getDb, transact } from './db';
-import type { DbState, Profile, ProviderRole, PublicUser, UserSettings } from './types';
-
-export type RatingSummary = { average: number | null; count: number };
-export type ProviderSummary = PublicUser & { rating: RatingSummary };
+import type {
+  DbState,
+  Profile,
+  ProviderRole,
+  ProviderSummary,
+  PublicUser,
+  RatingSummary,
+  UserSettings,
+} from '../types';
 
 export function ratingSummary(db: DbState, providerId: string): RatingSummary {
   const stars = db.rooms.filter((r) => r.providerId === providerId).flatMap((r) => r.ratings.map((x) => x.stars));

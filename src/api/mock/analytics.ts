@@ -2,23 +2,10 @@ import { delay, requireAuth, toPublic } from './client';
 import { getDb } from './db';
 import { findUser } from './internal';
 import { ratingSummary } from './users';
-import type { PublicUser } from './types';
+import type { ProviderStats } from '../types';
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const WEEKS_SHOWN = 8;
-
-export type ProviderStats = {
-  listeningDone: number;
-  moderationDone: number;
-  activeSessions: number;
-  averageRating: number | null;
-  ratingCount: number;
-  /** Count of ratings per star value, index 0 = 1 star. */
-  ratingDistribution: number[];
-  /** Completed sessions per week, oldest first. */
-  weekly: { label: string; value: number }[];
-  feedback: { by: PublicUser; stars: number; text: string; at: number }[];
-};
 
 export async function getProviderStats(): Promise<ProviderStats> {
   await delay();

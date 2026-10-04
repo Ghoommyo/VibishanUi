@@ -2,8 +2,7 @@ import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { requestsApi, usersApi, type ProviderRole, type PublicUser } from '@/api';
-import type { ProviderSummary } from '@/api/users';
+import { requestsApi, usersApi, type ProviderRole, type ProviderSummary, type PublicUser } from '@/api';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Avatar } from '@/components/ui/avatar';

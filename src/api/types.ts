@@ -96,3 +96,66 @@ export type DbState = {
   messages: Message[];
   notifications: AppNotification[];
 };
+
+export type SignupInput = { username: string; email: string; password: string; role: Role };
+
+export type RatingSummary = { average: number | null; count: number };
+export type ProviderSummary = PublicUser & { rating: RatingSummary };
+
+export type SentRequestsResult = { providerNames: string[]; participantNames: string[] };
+
+/** How the current user takes part in a room. Decides the closing-note label and permissions. */
+export type RoomRole = 'member' | 'listener' | 'moderator';
+export type ClosureLabel = 'Conclusion' | 'Observation' | 'Verdict';
+
+export type RoomListItem = {
+  room: Room;
+  provider: PublicUser;
+  others: PublicUser[];
+  lastMessage: Message | null;
+  lastActivity: number;
+};
+
+export type RoomDetail = {
+  room: Room;
+  members: PublicUser[];
+  myRole: RoomRole;
+  canSend: boolean;
+  /** Why the composer is disabled, when it is. */
+  sendBlockedReason: string | null;
+  hasSubmitted: boolean;
+  needsRating: boolean;
+};
+
+export type MessageWithSender = Message & { sender: PublicUser };
+
+export type RoomSummary = {
+  room: Room;
+  provider: PublicUser;
+  starred: MessageWithSender[];
+  comments: { user: PublicUser; text: string; at: number }[];
+  observation: { user: PublicUser; text: string } | null;
+  verdict: { user: PublicUser; text: string } | null;
+};
+
+export type NotificationItem = AppNotification & {
+  request: ServiceRequest;
+  requester: PublicUser;
+  provider: PublicUser;
+  participants: PublicUser[];
+  /** True when the current user still has to accept or reject. */
+  actionable: boolean;
+};
+
+export type ProviderStats = {
+  listeningDone: number;
+  moderationDone: number;
+  activeSessions: number;
+  averageRating: number | null;
+  ratingCount: number;
+  /** Count of ratings per star value, index 0 = 1 star. */
+  ratingDistribution: number[];
+  /** Completed sessions per week, oldest first. */
+  weekly: { label: string; value: number; start?: number; end?: number }[];
+  feedback: { by: PublicUser; stars: number; text: string; at: number }[];
+};

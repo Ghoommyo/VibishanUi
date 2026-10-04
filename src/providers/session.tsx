@@ -1,10 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, use, useEffect, useState, type PropsWithChildren } from 'react';
 
-import { authApi, usersApi, type PublicUser, type Role } from '@/api';
-import type { SignupInput } from '@/api/auth';
-
-const KEY = 'vibishan.session.userId';
+import { authApi, onUnauthorized, usersApi, type PublicUser, type Role, type SignupInput } from '@/api';
 
 type SessionContextValue = {
   user: PublicUser | null;
@@ -25,29 +21,25 @@ export function SessionProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     (async () => {
       try {
-        const id = await AsyncStorage.getItem(KEY);
-        if (id) setUser(await authApi.restoreSession(id));
+        setUser(await authApi.restoreSession());
       } catch {
-        // Treat unreadable storage as logged out.
+        // Treat unreadable storage or an unreachable server as logged out.
       } finally {
         setIsLoading(false);
       }
     })();
   }, []);
 
-  const startSession = async (next: PublicUser) => {
-    await AsyncStorage.setItem(KEY, next.id);
-    setUser(next);
-  };
+  // The server rejected the stored token (expired, or the account is gone): back to the login screens.
+  useEffect(() => onUnauthorized(() => setUser(null)), []);
 
   const value: SessionContextValue = {
     user,
     isLoading,
-    signIn: async (username, password, role) => startSession(await authApi.login(username, password, role)),
-    signUp: async (input) => startSession(await authApi.signup(input)),
+    signIn: async (username, password, role) => setUser(await authApi.login(username, password, role)),
+    signUp: async (input) => setUser(await authApi.signup(input)),
     signOut: async () => {
       await authApi.logout();
-      await AsyncStorage.removeItem(KEY);
       setUser(null);
     },
     refreshUser: async () => setUser(await usersApi.getMe()),
