@@ -12,22 +12,49 @@ The package manager is npm (`package-lock.json`, no `bun.lock`).
 
 ```bash
 npm start                # expo start (also: npm run ios | android | web)
-npm run lint             # expo lint; no ESLint config is committed yet, so the first run scaffolds one
+npm run lint             # expo lint
 npx tsc --noEmit         # typecheck
-npm run reset-project    # moves the starter src/ and scripts/ into example/ and creates a blank src/app
+npx expo-doctor          # dependency/config checks
 ```
 
-No test runner is set up yet. The README points to the Expo "Unit Testing with Jest" guide.
+There is no test runner. To check a change, run the app on web (`npm run web`) and walk the flows with the demo accounts below. Running `npx expo export --platform ios --platform android` is a quick way to confirm that native bundling still works.
+
+Don't start Metro with `CI=1` while you're editing: in CI mode it doesn't watch files, so the browser keeps serving a stale bundle.
+
+## What the app is
+
+Users request either a 1:1 session with a **Listener** or a group session run by a **Moderator** (with at least one other user as a participant). Every request goes through approval, then a chatroom, closing notes (Conclusion / Observation / Verdict), ratings, and a summary. There are three account roles: `user`, `listener` and `moderator`. The per-phase design notes are in `plans/`.
 
 ## Architecture
 
-The repo is still the `create-expo-app` starter template with two tabs (Home, Explore).
+### Mock backend: `src/api/`
+All data and business rules live here. UI code never changes data directly; it calls the namespaces exported from `src/api/index.ts` (`authApi`, `usersApi`, `requestsApi`, `roomsApi`, `notificationsApi`, `analyticsApi`). These are written so that real HTTP calls can replace them later.
+- `db.ts` keeps one JSON snapshot in AsyncStorage (`vibishan.db.v1`), seeded from `seed.ts` on first run. Mutations go through `transact()`. Settings → "Reset demo data" calls `resetDb()`.
+- `client.ts` holds the current user id, which stands in for an auth token. Endpoints call `requireAuth()` instead of taking a user id. `delay()` simulates network latency.
+- The rules are enforced in `requests.ts` and `rooms.ts`, not in screens:
+  - Moderation requests need every participant to accept before the moderator is notified.
+  - Rooms move through `pending → active → closed`, or to `rejected`.
+  - Muted members, and members who have already submitted a closure, can't send messages.
+  - A moderator's verdict closes the room for everyone. A listening room closes once every member has submitted.
+- Demo accounts all use password `password123`: alice, bob, carol (users), lisa, leo (listeners), maya, max (moderators). The login screen has chips that fill these in.
 
-- **Routing**: Expo Router, entry is `expo-router/entry`, and routes live in `src/app/`. `typedRoutes` and `reactCompiler` are enabled in `app.json` experiments. Because the React Compiler is on, don't add manual `useMemo`/`useCallback` without a reason.
-- **Platform-specific files**: the template relies on `.web.tsx` / `.web.ts` overrides that Metro picks up automatically:
-  - `src/components/app-tabs.tsx` uses `NativeTabs` from `expo-router/unstable-native-tabs` for native tab bars. `app-tabs.web.tsx` builds a custom top tab bar from `expo-router/ui` (`Tabs`/`TabList`/`TabTrigger`/`TabSlot`). When you add or rename a tab, update **both** files.
-  - `src/hooks/use-color-scheme.web.ts` returns `'light'` until hydration, because web output is static (`web.output: "static"`).
-  - `animated-icon.tsx` / `animated-icon.web.tsx` (the web version uses a CSS module).
-- **Root layout** (`src/app/_layout.tsx`): it calls `SplashScreen.preventAutoHideAsync()` at module scope, wraps the app in the expo-router `ThemeProvider` (light/dark), and renders `AnimatedSplashOverlay` plus `AppTabs`.
-- **Theming**: the design tokens live in `src/constants/theme.ts`: `Colors` (light/dark), `Fonts` (resolved per platform, with web using the CSS variables in `src/global.css`), `Spacing`, `BottomTabInset`, and `MaxContentWidth`. Build UI with `ThemedText` and `ThemedView` (`type` / `themeColor` props backed by `ThemeColor` keys) and the `useTheme()` hook rather than hard-coded colors. A new color must be added to both the `light` and `dark` palettes.
-- **Path aliases** (`tsconfig.json`): `@/*` maps to `src/*` and `@/assets/*` maps to `assets/*`.
+### Routing: `src/app/`
+- The root `_layout.tsx` wraps the app in `PrefsProvider` (theme override), then `SessionProvider`, then the navigation `ThemeProvider`. It uses `Stack.Protected` guards: `welcome`/`login`/`signup` when logged out, and `(app)` when logged in. In SDK 57 a blocked route falls back to `index.tsx`, which redirects (there's no `redirectTo` until SDK 58).
+- `(app)/_layout.tsx` is a Stack holding the `(drawer)` group (home, chats, profile, settings), plus `notifications`, `chat/[id]/index` and `chat/[id]/summary`.
+- `home.tsx` switches on role: `RequestServiceForm` for users, `ProviderAnalytics` for listeners and moderators.
+
+### Data loading
+`useApi(fetcher, key, { pollMs })` in `src/hooks/use-api.ts` refetches on screen focus and can poll. Polling is how changes made by "other users" show up (chat 2–3s, notification bell 3s). Pass a string `key` that names the fetched resource, e.g. ``room:${id}``.
+
+### React Compiler gotcha
+`reactCompiler` is enabled. The compiler hoists property reads it finds inside event handlers into render as memo dependencies. So `onPress={() => go(selected!.room.id)}` crashes while `selected` is null. Read the value during render with optional chaining (`const id = selected?.room.id`) and guard inside the handler instead. Don't add manual `useMemo`/`useCallback` without a reason.
+
+### UI conventions
+- Build with `ThemedText`/`ThemedView`/`useTheme()` and the tokens in `src/constants/theme.ts`. Any new colour goes in **both** the `light` and `dark` palettes. The `chart` token was validated for each surface separately.
+- Shared primitives live in `src/components/ui/`:
+  - Layout and controls: `Screen`, `Button`, `TextField`, `SegmentedControl`, `RadioGroup`, `Section`/`Row`
+  - Overlays and pickers: `Dialog` (an RN `Modal`, which works on web), `SearchableSelect`
+  - Display: `Avatar`, `StarRating`, `StatusPill`, `Icon`
+- `Icon` maps names to SF Symbols on iOS and Material Symbols on Android and web, through `expo-symbols`. Add new icons to its map.
+- `src/hooks/use-color-scheme.web.ts` returns `'light'` until hydration, because web output is static (`web.output: "static"`).
+- Path aliases: `@/*` maps to `src/*`, and `@/assets/*` maps to `assets/*`.
