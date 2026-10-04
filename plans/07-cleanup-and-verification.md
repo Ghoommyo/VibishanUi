@@ -29,4 +29,7 @@ Run these on web (`npx expo start --web`), then spot-check iOS and Android in Ex
 All seven phases are implemented and pushed.
 - Template components and images were removed during Phase 5, once typed routes started flagging the old `/explore` link. `scripts/reset-project.js` was removed in this phase.
 - `tsc`, `expo lint` and `expo-doctor` (21/21) pass. The app bundles for iOS and Android with `expo export`.
-- Scenarios 1–7 and the wide-screen drawer were driven end to end in headless Chrome against the web build, and the analytics charts were checked in light and dark mode. iOS and Android have **not** been tried on a device or simulator yet.
+- Scenarios 1–6 and the wide-screen drawer were driven end to end in headless Chrome against the web build. The analytics dashboard was rendered from seed data in light and dark mode, with the dark theme set directly rather than through the Settings switch.
+- Scenario 7 (analytics updating after a new session) was only verified at the API level, with a Node script.
+- The Settings theme switch and Reset demo data have not been clicked through in the UI.
+- iOS and Android have **not** been tried on a device or simulator yet.
