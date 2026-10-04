@@ -21,6 +21,8 @@ export const Colors = {
     success: '#1E9E5A',
     warning: '#C27C0E',
     star: '#F5A623',
+    /** Single-series chart marks; validated against the light surface. */
+    chart: '#208AEF',
   },
   dark: {
     text: '#ffffff',
@@ -35,6 +37,8 @@ export const Colors = {
     success: '#3CC47C',
     warning: '#E5A23A',
     star: '#F7B84B',
+    /** Validated against the dark surface (lightness band 0.48–0.67). */
+    chart: '#3392EE',
   },
 } as const;
 
